@@ -10,8 +10,15 @@ export default function PollList() {
     setPolls(res.data)
   }
   const vote = async (id, choice) => {
-    await API.post(`/polls/${id}/vote`, { choice })
-    fetchPolls()
+    try {
+      await API.post(`/polls/${id}/vote`, { choice })
+      alert('Voted!')
+      fetchPolls()
+    } catch (error) {
+      if (error.response?.status === 400) {
+        alert('You have already voted on this poll!')
+      }
+    }
   }
   return (
     <div>

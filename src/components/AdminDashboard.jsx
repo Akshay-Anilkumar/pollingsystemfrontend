@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import API from '../services/api'
 
 export default function AdminDashboard() {
@@ -8,6 +9,7 @@ export default function AdminDashboard() {
   const [duration, setDuration] = useState(60)
   const [isPublic, setIsPublic] = useState(true)
   const [allowedUsers, setAllowedUsers] = useState('')
+  const navigate = useNavigate()
 
   useEffect(()=>{ load() },[])
   const load = async () => {
@@ -29,7 +31,18 @@ export default function AdminDashboard() {
     load()
   }
 
-  const remove = async (id) => { await API.delete(`/polls/${id}`); load() }
+  const remove = async (id) => {
+    try {
+      await API.delete(`/polls/${id}`)
+      alert('Deleted!')
+      load()
+    } catch (error) {
+      if (error.response?.status === 403) {
+        alert('Not owner!')
+      }
+    }
+  }
+  
   const edit = async (id) => {
     const newTitle = prompt('New title')
     if (newTitle) { await API.patch(`/polls/${id}`, { title: newTitle }); load() }
@@ -54,7 +67,7 @@ export default function AdminDashboard() {
           <p>{p.isActive ? 'Active' : 'Expired'}</p>
           <button onClick={()=>edit(p.id)} disabled={!p.isActive}>Edit</button>
           <button onClick={()=>remove(p.id)}>Delete</button>
-          <button onClick={()=>window.location.href=`/polls/${p.id}/results`}>Results</button>
+          <button onClick={()=>navigate(`/polls/${p.id}/results`)}>Results</button>
         </div>
       ))}
     </div>
